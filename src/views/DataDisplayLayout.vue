@@ -10,9 +10,9 @@
       </nav>
       
       <div class="header-actions">
-        <button class="action-btn">筛选条件</button>
-        <button class="action-btn">单位</button>
-        <button class="action-btn">切换</button>
+        <button class="action-btn action-filter">筛选条件</button>
+        <button class="action-btn action-unit">单位</button>
+        <button class="action-btn action-switch">切换</button>
       </div>
     </header>
 
@@ -27,11 +27,11 @@ import { RouteNames } from '../router'; // 确保路径正确
 </script>
 
 <style scoped>
-/* 样式与之前 App.vue 中的 header-toolbar 相关样式保持一致 */
+/* 确保容器占满父容器的剩余空间 */
 .data-display-layout {
   display: flex;
   flex-direction: column;
-  height: 100%; /* 确保容器占满父容器 */
+  height: 100%;
 }
 
 /* --- 顶部工具栏样式 --- */
@@ -44,6 +44,7 @@ import { RouteNames } from '../router'; // 确保路径正确
   border-radius: 4px;
   margin-bottom: 10px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0; /* 防止顶部栏被压缩 */
 }
 
 .header-tabs {
@@ -56,27 +57,39 @@ import { RouteNames } from '../router'; // 确保路径正确
   padding: 5px 0;
   color: #666;
   font-size: 14px;
-  text-decoration: none; /* 移除 router-link 默认下划线 */
+  text-decoration: none;
+  white-space: nowrap; /* 防止 Tab 文本换行 */
 }
 
 .tab.active {
-  color: #1890ff; /* 蓝色高亮 */
+  color: #1890ff;
   border-bottom: 2px solid #1890ff;
   font-weight: bold;
+}
+
+.header-actions {
+    display: flex;
+    gap: 8px;
 }
 
 .header-actions .action-btn {
   background-color: #1890ff;
   color: #fff;
   border: none;
-  padding: 8px 15px;
-  margin-left: 10px;
+  padding: 6px 12px;
   border-radius: 4px;
   cursor: pointer;
+  font-size: 13px;
+}
+
+.action-unit, .action-switch {
+    background-color: #e6f7ff;
+    color: #1890ff;
+    border: 1px solid #1890ff;
 }
 
 .nested-content-area {
     flex: 1;
-    overflow: hidden;
+    overflow: hidden; /* 确保内容区可以填满 DataDisplayLayout 的剩余高度 */
 }
 </style>

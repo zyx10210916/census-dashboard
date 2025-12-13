@@ -4,7 +4,11 @@
       <h1 class="system-title">
         广州市第五次全国经济普查地理信息系统
       </h1>
-      </header>
+      <div class="user-info">
+        <button class="setting-btn">⚙️</button>
+        <span>Admin</span>
+      </div>
+    </header>
 
     <main class="app-main">
       <nav class="sidebar">
@@ -31,6 +35,85 @@
 import { RouteNames } from './router'; // 确保路径正确
 </script>
 
-<style>
-/* ... 样式保持不变，只需要确保 .nav-item.active-group 和 .router-link-active 样式能正确作用于链接 ... */
+<style scoped>
+/* --- 顶部 Header 样式 --- */
+.app-header {
+  height: 60px;
+  background-color: #001529; /* 深色背景 */
+  color: #fff;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.system-title {
+  font-size: 20px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+
+.setting-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 18px;
+  margin-right: 15px;
+  cursor: pointer;
+}
+
+/* --- Main 区域布局样式 --- */
+.app-main {
+  display: flex;
+  flex: 1; /* 占据剩余高度 */
+  overflow: hidden;
+}
+
+/* --- 左侧 Sidebar 样式 --- */
+.sidebar {
+  width: 200px; /* 固定宽度 */
+  background-color: #fff;
+  padding: 10px 0;
+  overflow-y: auto;
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0; /* 防止被压缩 */
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  color: #333;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* 导航组标题/当前激活的主模块 */
+.active-group {
+    font-weight: bold;
+    color: #1890ff; /* 蓝色高亮 */
+    margin-top: 10px;
+    border-left: 3px solid #1890ff;
+    background-color: #e6f7ff;
+}
+
+/* 路由链接的激活状态 */
+.nav-item.router-link-active,
+.nav-item:hover {
+  background-color: #e6f7ff;
+  color: #1890ff;
+}
+
+/* --- 内容区样式 --- */
+.content-area {
+  flex: 1;
+  padding: 10px;
+  overflow: hidden; /* 内部滚动交给子组件 */
+}
 </style>
