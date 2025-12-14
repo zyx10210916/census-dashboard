@@ -10,15 +10,13 @@
           <span class="footer-label">比同期增长率</span>
           <span class="growth-rate">+5.10%</span>
         </div>
-        <div class="chart-placeholder mini-chart"></div>
+        <div ref="miniChartRef" class="mini-chart-container"></div>
       </section>
 
       <section class="stat-card">
         <div class="card-header">从业人员类型构成</div>
         <div class="indicator-value">195.43 <span>万人</span></div>
-        <div class="chart-placeholder circle-chart">
-          <p>（图表占位：环形图）</p>
-        </div>
+        <div ref="donutChartRef" class="chart-container circle-chart"></div>
         <ul class="legend-list">
           <li><span class="dot large"></span> 大型</li>
           <li><span class="dot middle"></span> 中型</li>
@@ -30,9 +28,7 @@
       <section class="stat-card">
         <div class="card-header">主要经济指标</div>
         <div class="indicator-value large-indicator">72,030 <span>亿元</span></div>
-        <div class="chart-placeholder bar-chart">
-          <p>（图表占位：条形图）</p>
-        </div>
+        <div ref="barChartRef" class="chart-container bar-chart"></div>
       </section>
     </aside>
 
@@ -51,30 +47,172 @@
     <aside class="right-charts-panel">
       <section class="chart-section">
         <h4 class="chart-title">资产情况</h4>
-        <div class="chart-placeholder right-bar-chart">
-          <p>（图表占位：柱状图）</p>
-        </div>
+        <div ref="assetChartRef" class="chart-container right-bar-chart"></div>
       </section>
       
       <section class="chart-section">
         <h4 class="chart-title">负债情况</h4>
-        <div class="chart-placeholder right-bar-chart">
-          <p>（图表占位：柱状图）</p>
-        </div>
+        <div ref="liabilityChartRef" class="chart-container right-bar-chart"></div>
       </section>
       
       <section class="chart-section">
         <h4 class="chart-title">营业利润</h4>
-        <div class="chart-placeholder line-chart">
-          <p>（图表占位：折线图）</p>
-        </div>
+        <div ref="profitChartRef" class="chart-container line-chart"></div>
       </section>
     </aside>
   </div>
 </template>
 
 <script setup lang="ts">
-// 你的组件逻辑
+import * as echarts from 'echarts';
+import { ref, onMounted } from 'vue';
+import type { EChartsOption } from 'echarts'; // 引入类型定义
+
+// ECharts 容器的引用
+const miniChartRef = ref<HTMLElement | null>(null);
+const donutChartRef = ref<HTMLElement | null>(null);
+const barChartRef = ref<HTMLElement | null>(null);
+const assetChartRef = ref<HTMLElement | null>(null);
+const liabilityChartRef = ref<HTMLElement | null>(null);
+const profitChartRef = ref<HTMLElement | null>(null);
+
+// 辅助函数：初始化 ECharts 实例
+const initChart = (ref: HTMLElement | null, option: EChartsOption) => {
+  if (ref) {
+    const chart = echarts.init(ref);
+    chart.setOption(option);
+    
+    // 自动适应窗口大小
+    window.addEventListener('resize', () => {
+      chart.resize();
+    });
+  }
+};
+
+onMounted(() => {
+  // 1. 法人单位数量 - 迷你折线图
+  const miniOption: EChartsOption = {
+    grid: { left: 0, right: 0, top: 0, bottom: 0 },
+    xAxis: { type: 'category', show: false },
+    yAxis: { type: 'value', show: false },
+    series: [
+      {
+        type: 'line',
+        showSymbol: false,
+        data: [20, 30, 15, 45, 29.1], // 模拟数据
+        smooth: true,
+        lineStyle: { color: '#1890ff', width: 2 },
+        areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(24, 144, 255, 0.5)' }, { offset: 1, color: 'rgba(24, 144, 255, 0.0)' }]) },
+      },
+    ],
+  };
+  initChart(miniChartRef.value, miniOption);
+
+  // 2. 从业人员类型构成 - 环形图 (Donut)
+  const donutData = [
+    { value: 40, name: '大型' }, // 使用之前定义的颜色：#5b8ff9
+    { value: 30, name: '中型' }, // #5ad8a6
+    { value: 20, name: '小型' }, // #5d7092
+    { value: 10, name: '微型' }, // #f6bd16
+  ];
+  const donutOption: EChartsOption = {
+    color: ['#5b8ff9', '#5ad8a6', '#5d7092', '#f6bd16'],
+    series: [
+      {
+        type: 'pie',
+        radius: ['50%', '70%'],
+        center: ['50%', '50%'],
+        data: donutData,
+        silent: true, // 禁用交互，更像静态展示
+        label: { show: false }, // 不显示标签
+        labelLine: { show: false },
+      },
+    ],
+  };
+  initChart(donutChartRef.value, donutOption);
+
+  // 3. 主要经济指标 - 条形图 (作为进度条展示)
+  const barOption: EChartsOption = {
+    grid: { left: 0, right: 10, top: 10, bottom: 0, containLabel: true },
+    xAxis: { show: false, max: 100000 },
+    yAxis: { type: 'category', data: ['总产值'], show: false },
+    series: [
+      {
+        type: 'bar',
+        barWidth: 10,
+        data: [72030],
+        itemStyle: {
+          borderRadius: 5,
+          color: '#faad14', // 橙色
+        },
+        showBackground: true,
+        backgroundStyle: {
+            color: 'rgba(250, 173, 20, 0.2)'
+        },
+      },
+    ],
+  };
+  initChart(barChartRef.value, barOption);
+  
+  // 4 & 5. 资产情况 / 负债情况 - 分组柱状图 (右侧面板)
+  const rightChartData = {
+    labels: ['制造业', '零售业', '服务业', '贸易业'],
+    materials: [45, 30, 50, 35],
+    exam: [30, 25, 40, 48],
+  };
+
+  const createGroupedBarOption = (data: typeof rightChartData): EChartsOption => ({
+    color: ['#1890ff', '#f06292'], // 蓝色 (Materials) 和 粉色 (Exam)
+    legend: { 
+        show: true, 
+        data: ['Materials', 'Exam'], 
+        bottom: 0, 
+        textStyle: { fontSize: 10 },
+        itemGap: 5,
+        icon: 'rect'
+    },
+    grid: { left: '3%', right: '4%', bottom: '20%', top: '10%', containLabel: true },
+    xAxis: { type: 'category', data: data.labels, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { fontSize: 10 } },
+    yAxis: { type: 'value', splitLine: { lineStyle: { type: 'dashed', color: '#eee' } }, axisLabel: { fontSize: 10 } },
+    series: [
+      { name: 'Materials', type: 'bar', data: data.materials, barGap: '5%', barCategoryGap: '30%' },
+      { name: 'Exam', type: 'bar', data: data.exam },
+    ],
+  });
+
+  initChart(assetChartRef.value, createGroupedBarOption(rightChartData));
+  initChart(liabilityChartRef.value, createGroupedBarOption({ ...rightChartData, materials: [20, 15, 30, 25], exam: [10, 5, 20, 30] })); // 负债数据示例
+
+  // 6. 营业利润 - 折线图
+  const profitOption: EChartsOption = {
+    color: ['#1890ff'],
+    grid: { left: '3%', right: '4%', bottom: '5%', top: '10%', containLabel: true },
+    xAxis: { 
+        type: 'category', 
+        data: ['Q1', 'Q2', 'Q3', 'Q4', 'Q1', 'Q2', 'Q3', 'Q4'], 
+        axisLine: { show: true }, 
+        axisTick: { show: false },
+        axisLabel: { fontSize: 10 } 
+    },
+    yAxis: { 
+        type: 'value', 
+        splitLine: { lineStyle: { type: 'dashed', color: '#eee' } },
+        axisLabel: { fontSize: 10 } 
+    },
+    series: [
+      {
+        name: '营业利润',
+        type: 'line',
+        smooth: true,
+        showSymbol: false,
+        data: [10, 20, 50, 40, 50, 60, 75, 55],
+        areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(24, 144, 255, 0.4)' }, { offset: 1, color: 'rgba(24, 144, 255, 0.0)' }]) },
+      },
+    ],
+  };
+  initChart(profitChartRef.value, profitOption);
+
+});
 </script>
 
 <style scoped>
@@ -152,22 +290,24 @@
     font-size: 30px;
 }
 
-/* 图表占位符通用样式 */
-.chart-placeholder {
-  height: 100px;
-  background-color: #f6f6f6;
-  border-radius: 4px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  color: #aaa;
-  font-size: 12px;
+/* ECharts 容器通用样式 */
+.chart-container {
+  width: 100%;
+  display: block;
   margin: 10px 0;
 }
 
+.mini-chart-container {
+  height: 40px; /* 较小的迷你图高度 */
+  margin-top: -15px; /* 向上微调位置 */
+}
+
 .circle-chart {
-  height: 150px;
+  height: 150px; 
+}
+
+.bar-chart {
+    height: 100px;
 }
 
 .legend-list {
