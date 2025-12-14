@@ -53,8 +53,10 @@ const routes = [
       {
         path: 'comparison',
         name: RouteNames.COMPARISON,
+        // ============ 修改此处 meta.title =============
         component: ComparisonDisplay,
-        meta: { title: '数据比对展示' },
+        meta: { title: '数据比对展示' }, 
+        // ============================================
       },
       {
         path: 'heatmap',
@@ -66,13 +68,17 @@ const routes = [
         path: 'building',
         name: RouteNames.BUILDING,
         component: BuildingDisplay,
+        // ============ 修改此处 meta.title =============
         meta: { title: '建筑物展示' },
+        // ============================================
       },
       {
         path: 'custom',
         name: RouteNames.CUSTOM_AREA,
         component: CustomAreaDisplay,
+        // ============ 修改此处 meta.title =============
         meta: { title: '自定义区域汇总' },
+        // ============================================
       },
     ]
   },

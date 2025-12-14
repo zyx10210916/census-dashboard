@@ -10,7 +10,7 @@
       </nav>
       
       <div class="header-actions">
-        <button class="action-btn action-filter">筛选条件</button>
+        <button class="action-btn action-filter" @click="isFilterModalVisible = true">筛选条件</button>
         <button class="action-btn action-unit">单位</button>
         <button class="action-btn action-switch">切换</button>
       </div>
@@ -19,14 +19,33 @@
     <section class="nested-content-area">
       <router-view></router-view>
     </section>
+
+    <FilterModal 
+      :isVisible="isFilterModalVisible"
+      @update:isVisible="isFilterModalVisible = $event"
+      @apply="handleApplyFilters"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { RouteNames } from '../router'; // 确保路径正确
+import { ref } from 'vue';
+import { RouteNames } from '../router'; 
+import FilterModal from './FilterModal.vue'; // 引入新组件
+
+// 控制筛选弹窗的显示状态
+const isFilterModalVisible = ref(false);
+
+// 处理筛选条件应用的逻辑
+const handleApplyFilters = (filters: any) => {
+    console.log('应用筛选条件:', filters);
+    // 实际项目中，这里会调用 API 或更新全局状态来加载新的图表数据
+    // 例如：store.dispatch('loadDataWithFilters', filters);
+};
 </script>
 
 <style scoped>
+/* 保持原 DataDisplayLayout.vue 中的样式不变 */
 /* 确保容器占满父容器的剩余空间 */
 .data-display-layout {
   display: flex;
