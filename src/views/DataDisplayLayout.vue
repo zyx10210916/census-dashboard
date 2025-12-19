@@ -1,114 +1,138 @@
 <template>
-  <div class="data-display-layout">
-    <header class="header-toolbar">
-      <nav class="header-tabs">
-        <router-link :to="{ name: RouteNames.SUMMARY }" class="tab" active-class="active">汇总数据展示</router-link>
-        <router-link :to="{ name: RouteNames.COMPARISON }" class="tab" active-class="active">数据比对展示</router-link>
-        <router-link :to="{ name: RouteNames.HEATMAP }" class="tab" active-class="active">单位热力图</router-link>
-        <router-link :to="{ name: RouteNames.BUILDING }" class="tab" active-class="active">建筑物展示</router-link>
-        <router-link :to="{ name: RouteNames.CUSTOM_AREA }" class="tab" active-class="active">自定义区域汇总</router-link>
-      </nav>
-      
-      <div class="header-actions">
-        <button class="action-btn action-filter" @click="isFilterModalVisible = true">筛选条件</button>
-        <button class="action-btn action-unit">单位</button>
-        <button class="action-btn action-switch">切换</button>
-      </div>
-    </header>
-
-    <section class="nested-content-area">
-      <router-view></router-view>
-    </section>
-
+  <div class="data-display-container">
+    <!-- Tab导航栏 -->
+    <a-tabs v-model:activeKey="activeTabKey" class="custom-tabs" @change="handleTabChange">
+      <a-tab-pane key="summary" tab="汇总数据展示" />
+      <a-tab-pane key="comparison" tab="数据比对展示" />
+      <a-tab-pane key="heatmap" tab="单位热力图" />
+      <a-tab-pane key="building" tab="建筑物展示" />
+      <a-tab-pane key="custom" tab="自定义区域汇总" />
+    </a-tabs>
+ 
+    <!-- 操作按钮区 -->
+    <div class="action-bar">
+      <a-button type="primary" @click="showFilterModal">
+        <template #icon><FilterOutlined /></template>
+        筛选条件 
+      </a-button>
+      <a-button>
+        <template #icon><ApartmentOutlined /></template>
+        单位 
+      </a-button>
+      <a-button>
+        <template #icon><SwapOutlined /></template>
+        切换 
+      </a-button>
+    </div>
+ 
+    <!-- 动态内容区 -->
+    <div class="content-area">
+      <component 
+        :is="activeComponent" 
+        :filter-params="filterParams"
+        class="tab-content"
+      />
+    </div>
+ 
+    <!-- 筛选模态框 --> 
     <FilterModal 
-      :isVisible="isFilterModalVisible"
-      @update:isVisible="isFilterModalVisible = $event"
-      @apply="handleApplyFilters"
+      :is-visible="filterVisible"
+      @update:is-visible="handleFilterVisibleChange"
+      @apply="handleFilterApply"
     />
   </div>
 </template>
-
+ 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { RouteNames } from '../router'; 
-import FilterModal from './FilterModal.vue'; // 引入新组件
-
-// 控制筛选弹窗的显示状态
-const isFilterModalVisible = ref(false);
-
-// 处理筛选条件应用的逻辑
-const handleApplyFilters = (filters: any) => {
-    console.log('应用筛选条件:', filters);
-    // 实际项目中，这里会调用 API 或更新全局状态来加载新的图表数据
-    // 例如：store.dispatch('loadDataWithFilters', filters);
+import { ref, computed } from 'vue';
+import { FilterOutlined, ApartmentOutlined, SwapOutlined } from '@ant-design/icons-vue';
+import FilterModal from './FilterModal.vue';  
+import SummaryDisplay from './SummaryDisplay.vue';  
+ 
+// Tab相关状态 
+const activeTabKey = ref('summary');
+const filterParams = ref({});
+const filterVisible = ref(false);
+ 
+// 组件映射 (暂时只保留summary组件，其他组件可以后续添加)
+const componentMap = {
+  summary: SummaryDisplay
+};
+ 
+// 计算当前活动组件
+const activeComponent = computed(() => componentMap[activeTabKey.value as keyof typeof componentMap]);
+ 
+// Tab切换处理 
+const handleTabChange = (key: string) => {
+  activeTabKey.value  = key;
+};
+ 
+// 筛选相关方法 
+const showFilterModal = () => {
+  filterVisible.value  = true;
+};
+ 
+const handleFilterVisibleChange = (visible: boolean) => {
+  filterVisible.value  = visible;
+};
+ 
+const handleFilterApply = (filters: any) => {
+  filterParams.value  = filters;
+  console.log(' 应用筛选条件:', filters);
+  // 这里可以根据筛选条件重新加载数据
 };
 </script>
-
-<style scoped>
-/* 保持原 DataDisplayLayout.vue 中的样式不变 */
-/* 确保容器占满父容器的剩余空间 */
-.data-display-layout {
+ 
+<style scoped lang="less">
+.data-display-container {
   display: flex;
   flex-direction: column;
   height: 100%;
+  background: #fff;
+  padding: 16px;
 }
-
-/* --- 顶部工具栏样式 --- */
-.header-toolbar {
+ 
+.custom-tabs {
+  :deep(.ant-tabs-nav) {
+    margin: 0;
+    
+    .ant-tabs-tab {
+      padding: 12px 0;
+      font-size: 14px;
+      
+      &.ant-tabs-tab-active {
+        .ant-tabs-tab-btn {
+          color: #1890ff;
+          font-weight: 500;
+        }
+      }
+    }
+    
+    .ant-tabs-ink-bar {
+      background: #1890ff;
+    }
+  }
+}
+ 
+.action-bar {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 20px;
-  background-color: #fff;
-  border-radius: 4px;
-  margin-bottom: 10px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  flex-shrink: 0; /* 防止顶部栏被压缩 */
-}
-
-.header-tabs {
-  display: flex;
-  gap: 20px;
-}
-
-.tab {
-  cursor: pointer;
-  padding: 5px 0;
-  color: #666;
-  font-size: 14px;
-  text-decoration: none;
-  white-space: nowrap; /* 防止 Tab 文本换行 */
-}
-
-.tab.active {
-  color: #1890ff;
-  border-bottom: 2px solid #1890ff;
-  font-weight: bold;
-}
-
-.header-actions {
+  gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 16px;
+  
+  .ant-btn {
     display: flex;
-    gap: 8px;
+    align-items: center;
+  }
 }
-
-.header-actions .action-btn {
-  background-color: #1890ff;
-  color: #fff;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 13px;
-}
-
-.action-unit, .action-switch {
-    background-color: #e6f7ff;
-    color: #1890ff;
-    border: 1px solid #1890ff;
-}
-
-.nested-content-area {
-    flex: 1;
-    overflow: hidden; /* 确保内容区可以填满 DataDisplayLayout 的剩余高度 */
+ 
+.content-area {
+  flex: 1;
+  overflow: hidden;
+  
+  .tab-content {
+    height: 100%;
+  }
 }
 </style>
