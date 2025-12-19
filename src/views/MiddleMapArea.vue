@@ -49,25 +49,13 @@ const mapList = [
   { id: 'satellite', name: '影像图', className: 'mapType-image', imgNormal: yxtNormal, imgActive: yxtActive }
 ];
 
-// 【修改点1】业务图层配置改为 WMS 结构
+// 点、面要素
 const dynamicLayers = ref([
-  {
-    id: 'building_py',
-    label: '建筑点',
-    visible: true,
-    url: "http://10.44.58.28:8089/geoserver/workspace/wms",
-    layerName: "jianzhuwuxinxipc38"
-  },
-  {
-    id: 'house_py',
-    label: '房屋面',
-    visible: true,
-    url: "http://10.44.58.28:8089/geoserver/workspace/wms",
-    layerName: "WJPFWMpc38"
-  }
+  { id: 'building_py', url: 'http://192.168.3.32:6080/arcgis/rest/services/WUJINGPU/Building_PY/MapServer/0', label: '建筑点', visible: true },
+  { id: 'house_py', url: 'http://192.168.3.32:6080/arcgis/rest/services/WUJINGPU/House_PY/MapServer/0', label: '房屋面', visible: true }
 ]);
 
-// 行政要素配置（保持 ArcGIS FeatureLayer，除非你也将其改为了 GeoServer）
+// 行政要素
 const adminLayersConfig = [
   { id: 'cjwjx', url: 'http://192.168.3.32:6080/arcgis/rest/services/WUJINGPU/Cjwjx/MapServer/0', type: 'village', labelField: 'cjwmc' },
   { id: 'jzjx', url: 'http://192.168.3.32:6080/arcgis/rest/services/WUJINGPU/Jzjx/MapServer/0', type: 'town', labelField: 'zjdmc' },
@@ -78,9 +66,8 @@ let basemapInstances: Record<string, any> = {};
 
 onMounted(async () => {
   try {
-    // 【修改点2】引入 WMSLayer 模块
-    const [Map, MapView, FeatureLayer, WMSLayer, Basemap, TileLayer] = await loadModules([
-      'esri/Map', 'esri/views/MapView', 'esri/layers/FeatureLayer', 'esri/layers/WMSLayer',
+    const [Map, MapView, FeatureLayer, Basemap, TileLayer] = await loadModules([
+      'esri/Map', 'esri/views/MapView', 'esri/layers/FeatureLayer',
       'esri/Basemap', 'esri/layers/TileLayer'
     ], {
       url: 'http://192.168.94.114/4.19/init.js',
@@ -94,12 +81,16 @@ onMounted(async () => {
         village: { size: 10, weight: "normal", color: "#7f8c8d" }
       };
       const style = styles[type];
+
       return [{
         labelPlacement: "always-horizontal",
         labelExpressionInfo: { expression: `$feature.${field}` },
-        deconflictionStrategy: "static",
+        deconflictionStrategy: "static", 
         symbol: {
-          type: "text", color: style.color, haloColor: "rgba(255,255,255,0.8)", haloSize: "1.5px",
+          type: "text",
+          color: style.color,
+          haloColor: "rgba(255,255,255,0.8)",
+          haloSize: "1.5px",
           font: { size: style.size, weight: style.weight, family: "Microsoft YaHei" }
         }
       }];
@@ -107,7 +98,11 @@ onMounted(async () => {
 
     const adminRenderer = {
       type: "simple",
-      symbol: { type: "simple-fill", color: [0, 0, 0, 0], outline: { color: [100, 100, 100, 0.5], width: 1 } }
+      symbol: {
+        type: "simple-fill",
+        color: [0, 0, 0, 0],
+        outline: { color: [100, 100, 100, 0.5], width: 1 } 
+      }
     };
 
     basemapInstances.street = new Basemap({
@@ -121,29 +116,25 @@ onMounted(async () => {
 
     const map = new Map({ basemap: basemapInstances.street });
 
-    // 4. 加载行政注记 (ArcGIS FeatureLayer)
     adminLayersConfig.forEach(item => {
       map.add(new FeatureLayer({
-        url: item.url, id: item.id, outFields: [item.labelField],
+        url: item.url,
+        id: item.id,
+        outFields: [item.labelField], 
         labelingInfo: getLabelingInfo(item.type, item.labelField),
-        labelsVisible: true, renderer: adminRenderer, opacity: 1
+        labelsVisible: true,
+        renderer: adminRenderer,
+        opacity: 1
       }));
     });
 
-    // 【修改点3】以 WMSLayer 加载业务数据
     dynamicLayers.value.forEach(item => {
-      const wmsLayer = new WMSLayer({
+      map.add(new FeatureLayer({
         url: item.url,
         id: item.id,
         visible: item.visible,
-        sublayers: [{ name: item.layerName }],
-        customLayerParameters: {
-          transparent: true,
-          format: "image/png",
-          version: '1.3.0'
-        }
-      });
-      map.add(wmsLayer);
+        opacity: 0.8
+      }));
     });
 
     mapView.value = new MapView({
@@ -178,11 +169,10 @@ onUnmounted(() => mapView.value?.destroy());
 </script>
 
 <style lang="scss" scoped>
-/* 样式部分保持不变 */
 .map-container {
   position: relative;
   width: 100%;
-  height: 100vh;
+  height: 100%;
   overflow: hidden;
 }
 
@@ -195,7 +185,7 @@ onUnmounted(() => mapView.value?.destroy());
   height: 60px;
   width: 72px;
   position: absolute;
-  bottom: 20px;
+  bottom: 5%;
   right: 20px;
   cursor: pointer;
   z-index: 100;
